@@ -26,6 +26,7 @@ const ScreenshotDetailPage = () => {
   const [duration, setDuration] = useState<string>('');
   const [wappalyzer, setWappalyzer] = useState<apitypes.wappalyzer>({});
   const [loading, setLoading] = useState<boolean>(true);
+  const [notFound, setNotFound] = useState<boolean>(false);
   const navigate = useNavigate();
 
   const { id } = useParams<{ id: string; }>();
@@ -34,7 +35,7 @@ const ScreenshotDetailPage = () => {
   const currentId: number = parseInt(id, 10);
 
   useEffect(() => {
-    getData(setLoading, setDetail, setWappalyzer, setDuration, id);
+    getData(setLoading, setDetail, setWappalyzer, setDuration, setNotFound, id);
   }, [id]);
 
   // handle arrowleft and arrowright events
@@ -94,6 +95,40 @@ const ScreenshotDetailPage = () => {
   };
 
   if (loading) return <WideSkeleton />;
+
+  if (notFound) {
+    return (
+      <Card className="max-w-2xl mx-auto">
+        <CardHeader>
+          <CardTitle>Result #{id} not found</CardTitle>
+        </CardHeader>
+        <CardContent className="text-muted-foreground">
+          There is no result with this ID. It may have been deleted, or you
+          have navigated past the first or last result.
+        </CardContent>
+        <CardFooter className="flex justify-between">
+          <div className="flex space-x-2">
+            <Link to={"/screenshot/" + (currentId - 1)}>
+              <Button variant="outline" size="sm" disabled={currentId <= 1}>
+                <ChevronLeft className="mr-2 h-4 w-4" />
+                Previous
+              </Button>
+            </Link>
+            <Link to={"/screenshot/" + (currentId + 1)}>
+              <Button variant="outline" size="sm">
+                Next
+                <ChevronRight className="ml-2 h-4 w-4" />
+              </Button>
+            </Link>
+          </div>
+          <Link to="/gallery">
+            <Button size="sm">Back to gallery</Button>
+          </Link>
+        </CardFooter>
+      </Card>
+    );
+  }
+
   if (!detail) return;
 
   const probedDate = new Date(detail.probed_at);

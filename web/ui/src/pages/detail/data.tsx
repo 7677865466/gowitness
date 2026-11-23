@@ -8,10 +8,15 @@ const getData = async (
   setDetail: React.Dispatch<React.SetStateAction<apitypes.detail | undefined>>,
   setWappalyzer: React.Dispatch<React.SetStateAction<apitypes.wappalyzer>>,
   setDuration: React.Dispatch<React.SetStateAction<string>>,
+  setNotFound: React.Dispatch<React.SetStateAction<boolean>>,
   // args
   id: string | number,
 ) => {
   setLoading(true);
+  setNotFound(false);
+  // clear the previous result so a failed load never shows stale data
+  setDetail(undefined);
+  setDuration('');
   try {
     const [detailData, wappalyzerData] = await Promise.all([
       api.get('detail', { id }),
@@ -29,6 +34,11 @@ const getData = async (
       setDuration(formatDuration(durationObj, { format: ['minutes', 'seconds'] }));
     }
   } catch (err) {
+    if (err instanceof Error && err.message === 'HTTP Error: 404') {
+      setNotFound(true);
+      return;
+    }
+
     toast({
       title: "API Error",
       variant: "destructive",
